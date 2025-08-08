@@ -48,3 +48,4 @@ git push -u origin main
 ## Notes
 - Data is per-device. If you want to sync data across devices later, we can add optional export/import or a small backend.
 - If you change icons or theme color, update `manifest.webmanifest` and `/icons`.
+# maid-attendance-tracker
