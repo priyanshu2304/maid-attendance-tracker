@@ -144,12 +144,48 @@ export default function App() {
     setAtt(copy);
   }
 
+  // const report = useMemo(() => {
+  //   const s = staff.find((x) => x.id === rpId);
+  //   if (!s) return null;
+  //   const days = rangeDates(start, end);
+  //   const rec = att[s.id] || {};
+  //   const presentDays = days.filter((d) => !!rec[d]);
+  //   const total = presentDays.length * s.wage;
+  //   return { staff: s, days, presentDays, total };
+  // }, [rpId, start, end, att, staff]);
   const report = useMemo(() => {
     const s = staff.find((x) => x.id === rpId);
     if (!s) return null;
     const days = rangeDates(start, end);
     const rec = att[s.id] || {};
-    const presentDays = days.filter((d) => !!rec[d]);
+
+    // Format function: 8th August 2025
+    const formatDate = (dateStr) => {
+      const date = new Date(dateStr);
+      const day = date.getDate();
+      const month = date.toLocaleString("en-GB", { month: "long" });
+      const year = date.getFullYear();
+
+      // Day suffix
+      const suffix = (d) => {
+        if (d > 3 && d < 21) return "th";
+        switch (d % 10) {
+          case 1:
+            return "st";
+          case 2:
+            return "nd";
+          case 3:
+            return "rd";
+          default:
+            return "th";
+        }
+      };
+
+      return `${day}${suffix(day)} ${month} ${year}`;
+    };
+
+    const presentDays = days.filter((d) => !!rec[d]).map((d) => formatDate(d));
+
     const total = presentDays.length * s.wage;
     return { staff: s, days, presentDays, total };
   }, [rpId, start, end, att, staff]);
@@ -225,17 +261,16 @@ export default function App() {
                         <div style={{ fontWeight: 700 }}>{s.name}</div>
                         <div className="muted">₹{s.wage} / day</div>
                       </div>
-                      <div className="actions">
-                        <span className={"pill " + (present ? "ok" : "no")}>
-                          {present ? t.present : t.absent}
-                        </span>
-                        <button
-                          className="btn"
-                          onClick={() => setPresent(s.id, date, !present)}
-                        >
-                          {present ? t.absent : t.present}
-                        </button>
-                      </div>
+                      <label className="toggle">
+                        <input
+                          type="checkbox"
+                          checked={present}
+                          onChange={(e) =>
+                            setPresent(s.id, date, e.target.checked)
+                          }
+                        />
+                        <span className="slider"></span>
+                      </label>
                     </div>
                   );
                 })}
@@ -336,6 +371,7 @@ export default function App() {
             <div className="row">
               <label>{t.name}</label>
               <input
+                type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t.name}
